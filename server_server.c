@@ -93,9 +93,6 @@ int server_run(struct server_t* self, char* service){
   char* buffer = NULL;
   char* mensaje = NULL;
   int buffer_size = 0;
-
-  int valid_caract = 0;
-  int nueva_longitud = 0;
   int status = 0;
 
   while (status != ERROR){
@@ -105,11 +102,11 @@ int server_run(struct server_t* self, char* service){
       status = reservar_memoria(&mensaje, (int)buffer_size);
     }
     if (status != ERROR){
-      valid_caract = mapear_caracteres(buffer, buffer_size, mensaje);
+      int valid_caract = mapear_caracteres(buffer, buffer_size, mensaje);
       if (valid_caract == VACIO){
         status = server_send_line(&skt, &mensaje, VACIO);
       } else{
-        nueva_longitud = ajustar_longitud(&mensaje, rango_matriz, valid_caract);
+        int nueva_longitud = ajustar_longitud(&mensaje, rango_matriz, valid_caract);
         if (nueva_longitud != ERROR){
           calculos(matriz, rango_matriz, mensaje, nueva_longitud);
           status = server_send_line(&skt, &mensaje, nueva_longitud);

@@ -11,16 +11,6 @@
 
 
 
-int socket_create(struct socket_t* self){
-  self->sock_fd = -1;
-  return OK;
-}
-
-int socket_destroy(struct socket_t* self){
-  self->sock_fd = -1;
-  return OK;
-}
-
 int socket_set_fd(struct socket_t* self, int fd){
   self->sock_fd = fd;
   return OK;
@@ -64,11 +54,10 @@ int socket_close(struct socket_t* self){
 
 int socket_send_msg(struct socket_t* self, char* buf, int size){
   int sent = 0;
-  int bytes = 0;
   bool valid_socket = true;
 
   while (sent < size && valid_socket) {
-     bytes = send(self->sock_fd, &buf[sent], size-sent, MSG_NOSIGNAL);
+     int bytes = send(self->sock_fd, &buf[sent], size-sent, MSG_NOSIGNAL);
 
      if (bytes == 0) {
         valid_socket = false;

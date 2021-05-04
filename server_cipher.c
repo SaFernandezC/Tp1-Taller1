@@ -42,11 +42,10 @@ bool es_caracter_valido(char caracter){
 }
 
 int mapear_caracteres(char* str, int string_size, char* result){
-  char letra_actual;
   int contador = 0;
 
   for (int i = 0; i < string_size; i++) {
-    letra_actual = str[i];
+    char letra_actual = str[i];
 
     if (es_caracter_valido(letra_actual)){
       result[contador] = (int)letra_actual-65;
@@ -89,11 +88,10 @@ int ajustar_longitud(char** result, int rango_matriz, int valid_caract){
 void calculos(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
   int vector_aux[4]; //Maximo posible
   int posicion_vector = 0;
-  int aux = 0;
 
   while (posicion_vector < largo_msg) {
     for (int i = 0; i < rango_matriz; i++) {
-      aux = 0;
+      int aux = 0;
       for (int j = 0; j < rango_matriz; j++) {
         aux += matriz[i][j]*msg[posicion_vector+j];
       }
