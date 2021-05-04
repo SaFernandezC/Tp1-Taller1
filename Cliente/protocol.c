@@ -25,30 +25,47 @@ int protocol_send_line(struct socket_t* skt, char* line, unsigned short len){
 }
 
 int protocol_recv_line(struct socket_t* skt, char** line, unsigned short* line_size){
+  unsigned short bytes_to_read;
 
-  int estado = socket_recv_msg(skt, (char*)line_size, 2);
-  *line_size = ntohs(*line_size) + 1; //SUMO 1 por el \0 que debo agregar luego
+  int estado = socket_recv_msg(skt, (char*)&bytes_to_read, 2);
+  bytes_to_read = ntohs(bytes_to_read);
 
-  if(*line_size > 0 && estado != -1){
-    if (*line_size > strlen(*line)) { //SUMO 1 POR EL /0
-      char* aux = realloc(*line, *line_size*sizeof(char));
-      if(!aux){
+  if (bytes_to_read > 0 && estado != -1){
+    if (bytes_to_read > *line_size) {
+      char* aux = realloc(*line, bytes_to_read*sizeof(char));
+      if (!aux){
         return -1;
       }
       *line = aux;
     }
-    estado = socket_recv_msg(skt, *line, *line_size-1);
+    estado = socket_recv_msg(skt, *line, bytes_to_read);
+    *line_size = bytes_to_read;
     return estado;
   }
+
+  if (bytes_to_read == 0){
+    *line_size = 0;
+    return 0;
+  }
+
   return -1;
 }
 
 void protocol_map_line(char* buffer, int buf_size){
-
-  for (int i = 0; i < buf_size - 1; i++) {
+  if(buf_size == 0){
+    return;
+  }
+  for (int i = 0; i < buf_size; i++) {
     buffer[i] = buffer[i] + 65;
   }
-  buffer[buf_size - 1] = '\0';
+}
+
+void protocol_print_line(char* buffer, int buf_size){
+  for (int i = 0; i < buf_size && buf_size > 0; i++) {
+    printf("%c", buffer[i]);
+  }
+  printf("\n");
+  return;
 }
 
 int protocol_open_file(FILE** file, char* file_name){
@@ -67,7 +84,6 @@ int protocol_run(struct protocol_t* self, const char* host, const char* service)
   struct socket_t skt;
 
   if(socket_connect(&skt, host, service) == -1){
-    // printf("ERROR\n");
     return -1;
   }
 
@@ -85,17 +101,22 @@ int protocol_run(struct protocol_t* self, const char* host, const char* service)
   bytes_leidos = getline(&line, &len, file);
 
   while(!feof(file) && status != -1){
-
     status = protocol_send_line(&skt, line, bytes_leidos);
     if(status != -1){
       status = protocol_recv_line(&skt, &line, &bytes_leidos);
     }
     if(status != -1){
       protocol_map_line(line, bytes_leidos);
-      printf("%s\n", line);
+      protocol_print_line(line, bytes_leidos);
+    }
+    if(line){
+      free(line);
+      len = 0;
     }
     bytes_leidos = getline(&line, &len, file);
   }
+
+
 
   free(line);
   fclose(file);

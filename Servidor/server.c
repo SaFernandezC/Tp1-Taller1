@@ -38,7 +38,7 @@ int server_recive_line(struct socket_t* skt, char** msg, int* msg_size){
     if (bytes_to_read > *msg_size) {
       char* aux = (char*)realloc(*msg, bytes_to_read*sizeof(char));
       if(!aux){
-        return -1; //PONER CTE
+        return -1;
       }
       *msg = aux;
     }
@@ -104,20 +104,25 @@ int server_run(struct server_t* self, char* service){
     status = server_recive_line(&skt, &buffer, &buffer_size);
 
     if(status != -1){
-      status = reservar_memoria(&mensaje, (int)buffer_size-1);
+      status = reservar_memoria(&mensaje, (int)buffer_size);
     }
     if(status != -1){
       caracteres_validos = mapear_caracteres(buffer, buffer_size, mensaje);
-      nueva_longitud = ajustar_longitud(&mensaje, rango_matriz, caracteres_validos);
-      if(nueva_longitud != -1){
-        calculos(matriz, rango_matriz, mensaje, nueva_longitud);
-        status = server_send_line(&skt, &mensaje, nueva_longitud);
+      if(caracteres_validos == 0){
+        status = server_send_line(&skt, &mensaje, 0);
+      } else{
+        nueva_longitud = ajustar_longitud(&mensaje, rango_matriz, caracteres_validos);
+        if(nueva_longitud != -1){
+          calculos(matriz, rango_matriz, mensaje, nueva_longitud);
+          status = server_send_line(&skt, &mensaje, nueva_longitud);
+        }
       }
     }
   }
 
-  free(buffer);
   free(mensaje);
+  free(buffer);
+
 
   if(status == -1){
     return status;
