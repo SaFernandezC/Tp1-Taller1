@@ -106,10 +106,10 @@ int server_run(struct server_t* self, char* service){
       if (valid_caract == VACIO){
         status = server_send_line(&skt, &mensaje, VACIO);
       } else{
-        int nueva_longitud = ajustar_longitud(&mensaje, rango_matriz, valid_caract);
-        if (nueva_longitud != ERROR){
-          calculos(matriz, rango_matriz, mensaje, nueva_longitud);
-          status = server_send_line(&skt, &mensaje, nueva_longitud);
+        int nueva_long = ajustar_longitud(&mensaje, rango_matriz, valid_caract);
+        if (nueva_long != ERROR){
+          calculos(matriz, rango_matriz, mensaje, nueva_long);
+          status = server_send_line(&skt, &mensaje, nueva_long);
         }
       }
     }
