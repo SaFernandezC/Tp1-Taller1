@@ -77,11 +77,10 @@ int socket_send_msg(struct socket_t* self, char* buf, int size){
 
 int socket_recv_msg(struct socket_t* self, char* buf, int size){
   int received = 0;
-  int bytes = 0;
   bool valid_socket = true;
 
   while (received < size && valid_socket) {
-    bytes = recv(self->sock_fd, &buf[received], size-received, 0);
+    int bytes = recv(self->sock_fd, &buf[received], size-received, 0);
 
     if (bytes == 0) { // nos cerraron el socket :(
       valid_socket = false;
