@@ -10,7 +10,8 @@ int socket_create(struct socket_t* self);
 
 int socket_destroy(struct socket_t* self);
 
-int socket_connect(struct socket_t* self, const char* host, const char* service);
+int socket_connect(struct socket_t* self, const char* host,
+                  const char* service);
 
 int socket_close(struct socket_t* self);
 

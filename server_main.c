@@ -1,13 +1,13 @@
 #include <stdio.h>
 
 
-#include "server.h"
+#include "server_server.h"
 
 #define ARGS_PORT 1
 #define ARGS_KEY 2
 
 int main(int argc, char** argv) {
-  if(argc < 3){
+  if (argc < 3){
     printf("Uso: ./server <servicename> <key>");
     return -1;
   }

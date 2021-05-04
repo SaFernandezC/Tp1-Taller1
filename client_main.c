@@ -1,12 +1,12 @@
 #include <stdio.h>
-#include "protocol.h"
+#include "client_protocol.h"
 
 #define ARGS_HOST 1
 #define ARGS_PORT 2
 #define ARGS_FILE 3
 
 int main(int argc, char** argv) {
-  if(argc < 4){
+  if (argc < 4){
     printf("Uso: ./client <hostname> <servicename> <filename>");
     return -1;
   }

@@ -3,19 +3,16 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#include "protocol.h"
-#include "socket.h"
-
-
-
-
+#include "client_protocol.h"
+#include "common_socket.h"
 
 int protocol_create(struct protocol_t* self, char* file){
   self->file_name = file;
   return 0;
 }
 
-int protocol_send_line(struct socket_t* skt, char* line, unsigned short len){
+int protocol_send_line(struct socket_t* skt, char* line,
+                      unsigned short len){
   unsigned short len_big_endian = htons(len);
   int status = socket_send_msg(skt, (char*)&len_big_endian, 2);
   if (status != -1) {
@@ -24,7 +21,8 @@ int protocol_send_line(struct socket_t* skt, char* line, unsigned short len){
   return status;
 }
 
-int protocol_recv_line(struct socket_t* skt, char** line, unsigned short* line_size){
+int protocol_recv_line(struct socket_t* skt, char** line,
+                      unsigned short* line_size){
   unsigned short bytes_to_read;
 
   int estado = socket_recv_msg(skt, (char*)&bytes_to_read, 2);
@@ -52,7 +50,7 @@ int protocol_recv_line(struct socket_t* skt, char** line, unsigned short* line_s
 }
 
 void protocol_map_line(char* buffer, int buf_size){
-  if(buf_size == 0){
+  if (buf_size == 0){
     return;
   }
   for (int i = 0; i < buf_size; i++) {
@@ -69,26 +67,27 @@ void protocol_print_line(char* buffer, int buf_size){
 }
 
 int protocol_open_file(FILE** file, char* file_name){
-  if(strcmp(file_name, "-") == 0){
+  if (strcmp(file_name, "-") == 0){
     *file = stdin;
   } else{
     *file = fopen(file_name, "r");
-    if(!*file){
+    if (!*file){
       return -1;
     }
   }
+  return 0;
 }
 
-int protocol_run(struct protocol_t* self, const char* host, const char* service){
-
+int protocol_run(struct protocol_t* self, const char* host,
+                  const char* service){
   struct socket_t skt;
 
-  if(socket_connect(&skt, host, service) == -1){
+  if (socket_connect(&skt, host, service) == -1){
     return -1;
   }
 
   FILE* file;
-  if(protocol_open_file(&file,self->file_name) == -1){
+  if (protocol_open_file(&file,self->file_name) == -1){
     socket_close(&skt);
     return -1;
   }
@@ -100,16 +99,16 @@ int protocol_run(struct protocol_t* self, const char* host, const char* service)
 
   bytes_leidos = getline(&line, &len, file);
 
-  while(!feof(file) && status != -1){
+  while (!feof(file) && status != -1){
     status = protocol_send_line(&skt, line, bytes_leidos);
-    if(status != -1){
+    if (status != -1){
       status = protocol_recv_line(&skt, &line, &bytes_leidos);
     }
-    if(status != -1){
+    if (status != -1){
       protocol_map_line(line, bytes_leidos);
       protocol_print_line(line, bytes_leidos);
     }
-    if(line){
+    if (line){
       free(line);
       len = 0;
     }
@@ -122,7 +121,7 @@ int protocol_run(struct protocol_t* self, const char* host, const char* service)
   fclose(file);
   socket_close(&skt);
 
-  if(status == -1){
+  if (status == -1){
     return -1;
   }
   return 0;

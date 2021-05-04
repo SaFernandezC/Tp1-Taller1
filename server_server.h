@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "socket.h"
+#include "common_socket.h"
 
 struct server_t {
     int fd;

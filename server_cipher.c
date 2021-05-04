@@ -1,10 +1,10 @@
-#include "cipher.h"
+#include "server_cipher.h"
 
 #include <stdlib.h>
 
 
 int calcular_rango_matiz(int key_len){
-  if(key_len == 16){
+  if (key_len == 16){
     return 4;
   } else if (key_len == 9) {
     return 3;
@@ -15,7 +15,6 @@ int calcular_rango_matiz(int key_len){
 
 
 void cargar_matriz(int matriz[4][4], char* clave, int rango){
-
   int posicion = 0;
 
   for (size_t i = 0; i < rango; i++) {
@@ -33,16 +32,14 @@ bool es_caracter_valido(char caracter){
   return true;
 }
 
-int mapear_caracteres(char* string, int string_size, char* resultado){
-
+int mapear_caracteres(char* str, int string_size, char* result){
   char letra_actual;
   int contador = 0;
 
   for (int i = 0; i < string_size; i++) {
+    letra_actual = str[i];
 
-    letra_actual = string[i];
-
-    if(es_caracter_valido(letra_actual)){
+    if (es_caracter_valido(letra_actual)){
       resultado[contador] = (int)letra_actual-65;
       contador++;
     }
@@ -51,28 +48,28 @@ int mapear_caracteres(char* string, int string_size, char* resultado){
 }
 
 int calcular_tamanio(int rango_matriz, int caracteres_validos){
-  if(caracteres_validos%rango_matriz == 0){
+  if (caracteres_validos%rango_matriz == 0){
     return caracteres_validos;
   }
   return caracteres_validos + rango_matriz - (caracteres_validos%rango_matriz);
 }
 
-int ajustar_longitud(char** resultado, int rango_matriz, int caracteres_validos){
-  int nueva_longitud = calcular_tamanio(rango_matriz, caracteres_validos);
+int ajustar_longitud(char** result, int rango_matriz, int valid_caract){
+  int nueva_longitud = calcular_tamanio(rango_matriz, valid_caract);
 
-  if(nueva_longitud == caracteres_validos){
+  if (nueva_longitud == valid_caract){
     return nueva_longitud; //LA LONG ESTA BIEN
   }
 
-  char* aux = realloc(*resultado, nueva_longitud*sizeof(char));
-  if(!aux){
+  char* aux = realloc(*result, nueva_longitud*sizeof(char));
+  if (!aux){
     return -1;
   }
 
-  *resultado = aux;
+  *result = aux;
 
-  if(nueva_longitud > caracteres_validos){
-    for (int i = caracteres_validos; i < nueva_longitud; i++) {
+  if (nueva_longitud > valid_caract){
+    for (int i = valid_caract; i < nueva_longitud; i++) {
       aux[i] = 0;
     }
   }
@@ -80,27 +77,24 @@ int ajustar_longitud(char** resultado, int rango_matriz, int caracteres_validos)
   return nueva_longitud;
 }
 
-void calculos(int matriz[4][4], int rango_matriz, char* mensaje, int largo_mensaje){
-
-  int vector_aux[rango_matriz];
+void calculos(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
+  int vector_aux[4]; //Maximo posible
   int posicion_vector = 0;
   int aux = 0;
 
-  while (posicion_vector < largo_mensaje) {
+  while (posicion_vector < largo_msg) {
     for (int i = 0; i < rango_matriz; i++) {
       aux = 0;
       for (int j = 0; j < rango_matriz; j++) {
-        aux += matriz[i][j]*mensaje[posicion_vector+j];
+        aux += matriz[i][j]*msg[posicion_vector+j];
       }
       vector_aux[i] = aux;
     }
 
     for (int i = 0; i < rango_matriz; i++) {
-      mensaje[posicion_vector+i] = vector_aux[i]%26;
+      msg[posicion_vector+i] = vector_aux[i]%26;
     }
 
     posicion_vector += rango_matriz;
-
   }
-
 }

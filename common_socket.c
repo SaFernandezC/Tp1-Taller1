@@ -1,4 +1,4 @@
-#include "socket.h"
+#include "common_socket.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -26,27 +26,28 @@ int socket_set_fd(struct socket_t* self, int fd){
   return 0;
 }
 
-int socket_connect(struct socket_t* self, const char* host, const char* service){
+int socket_connect(struct socket_t* self, const char* host,
+                  const char* service){
   struct addrinfo hints, *server_info;
 
   memset(&hints, 0, sizeof(struct addrinfo));
   // printf("Conexion a %s - %s\n",host, service);
 
   int result = getaddrinfo(host, service, &hints, &server_info);
-  if(result != 0){
-    // printf("Error al conectar -> getaddrinfo error: %s\n",gai_strerror(result));
+  if (result != 0){
     return -1;
   }
 
-  self->sock_fd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-  // printf("Se creo el sock_fd: %i\n", self->sock_fd);
-  if(self->sock_fd == -1){
+  self->sock_fd = socket(server_info->ai_family, server_info->ai_socktype,
+                        server_info->ai_protocol);
+  if (self->sock_fd == -1){
     freeaddrinfo(server_info);
     return -1;
   }
 
-  int status = connect(self->sock_fd, server_info->ai_addr, server_info->ai_addrlen);
-  if(status == -1){
+  int status = connect(self->sock_fd, server_info->ai_addr,
+                      server_info->ai_addrlen);
+  if (status == -1){
     freeaddrinfo(server_info);
     return -1;
   }
@@ -71,19 +72,16 @@ int socket_send_msg(struct socket_t* self, char* buf, int size){
 
      if (bytes == 0) {
         valid_socket = false;
-     }
-     else if (bytes == -1) {
+     } else if (bytes == -1) {
         valid_socket = false;
-     }
-     else {
+     } else {
         sent += bytes;
      }
   }
 
   if (valid_socket) {
      return sent;
-  }
-  else {
+  } else {
      return -1;
   }
 }
@@ -98,19 +96,16 @@ int socket_recv_msg(struct socket_t* self, char* buf, int size){
 
     if (bytes == 0) { // nos cerraron el socket :(
       valid_socket = false;
-    }
-    else if (bytes == -1) { // hubo un error >(
+    } else if (bytes == -1) { // hubo un error >(
       valid_socket = false;
-    }
-    else {
+    } else {
       received += bytes;
     }
   }
 
   if (valid_socket) {
     return received;
-  }
-  else {
+  } else {
     return -1;
   }
 }
