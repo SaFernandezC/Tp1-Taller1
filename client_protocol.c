@@ -4,18 +4,21 @@
 #include <arpa/inet.h>
 
 #include "client_protocol.h"
-#include "common_socket.h"
+
+#define SIZE_MSG_LEN 2
+#define VACIO 0
+#define IGUAL 0
 
 int protocol_create(struct protocol_t* self, char* file){
   self->file_name = file;
-  return 0;
+  return OK;
 }
 
 int protocol_send_line(struct socket_t* skt, char* line,
                       unsigned short len){
   unsigned short len_big_endian = htons(len);
-  int status = socket_send_msg(skt, (char*)&len_big_endian, 2);
-  if (status != -1) {
+  int status = socket_send_msg(skt, (char*)&len_big_endian, SIZE_MSG_LEN);
+  if (status != ERROR) {
     status = socket_send_msg(skt, line, len);
   }
   return status;
@@ -25,14 +28,14 @@ int protocol_recv_line(struct socket_t* skt, char** line,
                       unsigned short* line_size){
   unsigned short bytes_to_read;
 
-  int estado = socket_recv_msg(skt, (char*)&bytes_to_read, 2);
+  int estado = socket_recv_msg(skt, (char*)&bytes_to_read, SIZE_MSG_LEN);
   bytes_to_read = ntohs(bytes_to_read);
 
-  if (bytes_to_read > 0 && estado != -1){
+  if (bytes_to_read > VACIO && estado != ERROR){
     if (bytes_to_read > *line_size) {
       char* aux = realloc(*line, bytes_to_read*sizeof(char));
       if (!aux){
-        return -1;
+        return ERROR;
       }
       *line = aux;
     }
@@ -41,16 +44,16 @@ int protocol_recv_line(struct socket_t* skt, char** line,
     return estado;
   }
 
-  if (bytes_to_read == 0){
-    *line_size = 0;
-    return 0;
+  if (bytes_to_read == VACIO){
+    *line_size = VACIO;
+    return OK;
   }
 
-  return -1;
+  return ERROR;
 }
 
 void protocol_map_line(char* buffer, int buf_size){
-  if (buf_size == 0){
+  if (buf_size == VACIO){
     return;
   }
   for (int i = 0; i < buf_size; i++) {
@@ -66,30 +69,34 @@ void protocol_print_line(char* buffer, int buf_size){
   return;
 }
 
+/*
+* Abre el archivo que el file_name indica. Si filname == "-"
+* se abre el stdin.
+*/
 int protocol_open_file(FILE** file, char* file_name){
-  if (strcmp(file_name, "-") == 0){
+  if (strcmp(file_name, "-") == IGUAL){
     *file = stdin;
   } else{
     *file = fopen(file_name, "r");
     if (!*file){
-      return -1;
+      return ERROR;
     }
   }
-  return 0;
+  return OK;
 }
 
 int protocol_run(struct protocol_t* self, const char* host,
                   const char* service){
   struct socket_t skt;
 
-  if (socket_connect(&skt, host, service) == -1){
-    return -1;
+  if (socket_connect(&skt, host, service) == ERROR){
+    return ERROR;
   }
 
   FILE* file;
-  if (protocol_open_file(&file,self->file_name) == -1){
+  if (protocol_open_file(&file,self->file_name) == ERROR){
     socket_close(&skt);
-    return -1;
+    return ERROR;
   }
 
   char* line = NULL;
@@ -99,18 +106,18 @@ int protocol_run(struct protocol_t* self, const char* host,
 
   bytes_leidos = getline(&line, &len, file);
 
-  while (!feof(file) && status != -1){
+  while (!feof(file) && status != ERROR){
     status = protocol_send_line(&skt, line, bytes_leidos);
-    if (status != -1){
+    if (status != ERROR){
       status = protocol_recv_line(&skt, &line, &bytes_leidos);
     }
-    if (status != -1){
+    if (status != ERROR){
       protocol_map_line(line, bytes_leidos);
       protocol_print_line(line, bytes_leidos);
     }
     if (line){
       free(line);
-      len = 0;
+      len = VACIO;
     }
     bytes_leidos = getline(&line, &len, file);
   }
@@ -121,12 +128,12 @@ int protocol_run(struct protocol_t* self, const char* host,
   fclose(file);
   socket_close(&skt);
 
-  if (status == -1){
-    return -1;
+  if (status == ERROR){
+    return ERROR;
   }
-  return 0;
+  return OK;
 }
 
 int protocol_destroy(struct protocol_t* self){
-  return 0;
+  return OK;
 }

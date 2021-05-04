@@ -5,9 +5,10 @@
 
 #define ARGS_PORT 1
 #define ARGS_KEY 2
+#define ARGC_SIZE 3
 
 int main(int argc, char** argv) {
-  if (argc < 3){
+  if (argc != ARGC_SIZE){
     printf("Uso: ./server <servicename> <key>");
     return -1;
   }

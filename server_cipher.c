@@ -2,19 +2,28 @@
 
 #include <stdlib.h>
 
+#define CLAVE_LARGA 16
+#define CLAVE_MEDIA 9
+#define CLAVE_CHICA 4
+#define MID_RANGO_MAT 3
+#define MIN_RANGO_MAT 2
+#define MIN_CHAR 'A'
+#define MAX_CHAR 'Z'
+#define VALOR_MAX_CARAC 26
 
 int calcular_rango_matiz(int key_len){
-  if (key_len == 16){
-    return 4;
-  } else if (key_len == 9) {
-    return 3;
+  if (key_len == CLAVE_LARGA){
+    return MAX_RANGO_MAT;
+  } else if (key_len == CLAVE_MEDIA) {
+    return MID_RANGO_MAT;
   } else {
-    return 2;
+    return MIN_RANGO_MAT;
   }
 }
 
 
-void cargar_matriz(int matriz[4][4], char* clave, int rango){
+void cargar_matriz(int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], char* clave,
+                  int rango){
   int posicion = 0;
 
   for (size_t i = 0; i < rango; i++) {
@@ -26,7 +35,7 @@ void cargar_matriz(int matriz[4][4], char* clave, int rango){
 }
 
 bool es_caracter_valido(char caracter){
-  if (caracter < 'A' || caracter > 'Z'){
+  if (caracter < MIN_CHAR || caracter > MAX_CHAR){
     return false;
   }
   return true;
@@ -40,7 +49,7 @@ int mapear_caracteres(char* str, int string_size, char* result){
     letra_actual = str[i];
 
     if (es_caracter_valido(letra_actual)){
-      resultado[contador] = (int)letra_actual-65;
+      result[contador] = (int)letra_actual-65;
       contador++;
     }
   }
@@ -58,12 +67,12 @@ int ajustar_longitud(char** result, int rango_matriz, int valid_caract){
   int nueva_longitud = calcular_tamanio(rango_matriz, valid_caract);
 
   if (nueva_longitud == valid_caract){
-    return nueva_longitud; //LA LONG ESTA BIEN
+    return nueva_longitud;
   }
 
   char* aux = realloc(*result, nueva_longitud*sizeof(char));
   if (!aux){
-    return -1;
+    return ERROR;
   }
 
   *result = aux;
@@ -92,7 +101,7 @@ void calculos(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
     }
 
     for (int i = 0; i < rango_matriz; i++) {
-      msg[posicion_vector+i] = vector_aux[i]%26;
+      msg[posicion_vector+i] = vector_aux[i]%VALOR_MAX_CARAC;
     }
 
     posicion_vector += rango_matriz;

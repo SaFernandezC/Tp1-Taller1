@@ -13,17 +13,17 @@
 
 int socket_create(struct socket_t* self){
   self->sock_fd = -1;
-  return 0;
+  return OK;
 }
 
 int socket_destroy(struct socket_t* self){
   self->sock_fd = -1;
-  return 0;
+  return OK;
 }
 
 int socket_set_fd(struct socket_t* self, int fd){
   self->sock_fd = fd;
-  return 0;
+  return OK;
 }
 
 int socket_connect(struct socket_t* self, const char* host,
@@ -34,32 +34,32 @@ int socket_connect(struct socket_t* self, const char* host,
   // printf("Conexion a %s - %s\n",host, service);
 
   int result = getaddrinfo(host, service, &hints, &server_info);
-  if (result != 0){
-    return -1;
+  if (result != OK){
+    return ERROR;
   }
 
   self->sock_fd = socket(server_info->ai_family, server_info->ai_socktype,
                         server_info->ai_protocol);
-  if (self->sock_fd == -1){
+  if (self->sock_fd == ERROR){
     freeaddrinfo(server_info);
-    return -1;
+    return ERROR;
   }
 
   int status = connect(self->sock_fd, server_info->ai_addr,
                       server_info->ai_addrlen);
-  if (status == -1){
+  if (status == ERROR){
     freeaddrinfo(server_info);
-    return -1;
+    return ERROR;
   }
 
   freeaddrinfo(server_info);
-  return 0;
+  return OK;
 }
 
 int socket_close(struct socket_t* self){
-  shutdown(self->sock_fd, SHUT_RDWR); //CIERRO COMUNICACION (RD y WR)
-  close(self->sock_fd); // DESTRUYO EL SOCKET
-  return 0;
+  shutdown(self->sock_fd, SHUT_RDWR); //Cierro comunicacion (RD y WR)
+  close(self->sock_fd); // Destruyo el socket
+  return OK;
 }
 
 int socket_send_msg(struct socket_t* self, char* buf, int size){
@@ -82,7 +82,7 @@ int socket_send_msg(struct socket_t* self, char* buf, int size){
   if (valid_socket) {
      return sent;
   } else {
-     return -1;
+     return ERROR;
   }
 }
 
@@ -106,6 +106,6 @@ int socket_recv_msg(struct socket_t* self, char* buf, int size){
   if (valid_socket) {
     return received;
   } else {
-    return -1;
+    return ERROR;
   }
 }
