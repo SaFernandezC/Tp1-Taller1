@@ -5,23 +5,21 @@
 #include <stdbool.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h> //Close la utiliza
 
 
 
-int socket_set_fd(struct socket_t* self, int fd){
-  self->sock_fd = fd;
-  return OK;
-}
+// int socket_set_fd(struct socket_t* self, int fd){
+//   self->sock_fd = fd;
+//   return OK;
+// }
 
 int socket_connect(struct socket_t* self, const char* host,
                   const char* service){
   struct addrinfo hints, *server_info;
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  // printf("Conexion a %s - %s\n",host, service);
 
   int result = getaddrinfo(host, service, &hints, &server_info);
   if (result != OK){
@@ -45,6 +43,17 @@ int socket_connect(struct socket_t* self, const char* host,
   freeaddrinfo(server_info);
   return OK;
 }
+
+
+int socket_accept(struct socket_t* self, int fd, struct sockaddr* addr,
+                  socklen_t* addr_len){
+  self->sock_fd = accept(fd, addr, addr_len);
+  if (self->sock_fd == ERROR){
+    return ERROR;
+  }
+  return OK;
+}
+
 
 int socket_close(struct socket_t* self){
   shutdown(self->sock_fd, SHUT_RDWR); //Cierro comunicacion (RD y WR)

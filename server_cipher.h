@@ -2,8 +2,12 @@
 #define CIPHER_H
 
 #define MAX_RANGO_MAT 4
-#define OK 1
+#define OK 0
 #define ERROR -1
+
+struct cipher_t{
+  char* key;
+};
 
 #include <stdbool.h>
 
@@ -12,17 +16,19 @@
  * -1 (ERROR) ante fallas
  */
 
+int cipher_create(struct cipher_t* self, char* key);
+
 /*
  * Dada la long de la clave retorna el
  * rango de la matriz a utilizar.
  */
-int calcular_rango_matiz(int key_len);
+int cipher_calcular_rango_matiz(struct cipher_t* self);
 
 /*
  * Carga la matriz recibida con los valores almacenados en clave.
  */
-void cargar_matriz(int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], char* clave,
-                  int rango);
+void cipher_cargar_matriz(struct cipher_t* self,
+                          int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], int rango);
 
 
 /*

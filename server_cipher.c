@@ -1,6 +1,9 @@
 #include "server_cipher.h"
 
+
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define CLAVE_LARGA 16
 #define CLAVE_MEDIA 9
@@ -11,7 +14,13 @@
 #define MAX_CHAR 'Z'
 #define VALOR_MAX_CARAC 26
 
-int calcular_rango_matiz(int key_len){
+int cipher_create(struct cipher_t* self, char* key){
+  self->key = key;
+  return OK;
+}
+
+int cipher_calcular_rango_matiz(struct cipher_t* self){
+  int key_len = strlen(self->key);
   if (key_len == CLAVE_LARGA){
     return MAX_RANGO_MAT;
   } else if (key_len == CLAVE_MEDIA) {
@@ -22,13 +31,13 @@ int calcular_rango_matiz(int key_len){
 }
 
 
-void cargar_matriz(int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], char* clave,
-                  int rango){
+void cipher_cargar_matriz(struct cipher_t* self,
+                          int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], int rango){
   int posicion = 0;
 
   for (size_t i = 0; i < rango; i++) {
     for (size_t j = 0; j < rango; j++) {
-      matriz[i][j] = (int)clave[posicion] - 65;
+      matriz[i][j] = (int)self->key[posicion] - 65;
       posicion++;
     }
   }

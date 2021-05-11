@@ -2,10 +2,12 @@
 #define SERVER_H
 
 #include "common_socket.h"
+#include "server_cipher.h"
 
 struct server_t {
     int fd;
     char* key;
+    struct cipher_t* cipher;
 };
 
 /*

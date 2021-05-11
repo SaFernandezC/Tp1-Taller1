@@ -1,5 +1,4 @@
 #include "server_server.h"
-#include "server_cipher.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,12 +18,21 @@
 
 
 int server_create(struct server_t* self, char* key){
-  self->key = key;
+  struct cipher_t* cipher = calloc(1,sizeof(struct cipher_t));
+  if (!cipher){
+    return ERROR;
+  }
+  cipher_create(cipher, key);
+  self->cipher = cipher;
+
+  self->key = key; // ESTO SE VA
   self->fd = -1;
   return OK;
 }
 
 int server_destroy(struct server_t* self) {
+    // cipher_destroy();
+    free(self->cipher);
     server_close(self);
     self->fd = -1;
     return OK;
@@ -86,8 +94,8 @@ int server_run(struct server_t* self, char* service){
 
 
   int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT];
-  int rango_matriz = calcular_rango_matiz(strlen(self->key));
-  cargar_matriz(matriz, self->key, rango_matriz);
+  int rango_matriz = cipher_calcular_rango_matiz(self->cipher);
+  cipher_cargar_matriz(self->cipher, matriz, rango_matriz);
 
 
   char* buffer = NULL;
@@ -118,6 +126,7 @@ int server_run(struct server_t* self, char* service){
   free(mensaje);
   free(buffer);
 
+  close(skt.sock_fd);
 
   if (status == ERROR){
     return status;
@@ -128,17 +137,22 @@ int server_run(struct server_t* self, char* service){
 int server_accept(struct server_t* self, struct socket_t* skt){
   char addr_buf[INET_ADDRSTRLEN];
   struct sockaddr_in address;
+  int status = 0;
   socklen_t addr_len = (socklen_t) sizeof(address);
 
-  int fd = accept(self->fd, (struct sockaddr *)&address, &addr_len);
-  if (fd == ERROR){
-    return fd;
+  // int fd = accept(self->fd, (struct sockaddr *)&address, &addr_len);
+  // if (fd == ERROR){
+  //   return fd;
+  // }
+  status = socket_accept(skt, self->fd, (struct sockaddr*)&address, &addr_len);
+  if (status == ERROR){
+    return ERROR;
   }
 
   inet_ntop(AF_INET, &(address.sin_addr), addr_buf, INET_ADDRSTRLEN);
 
-  socket_set_fd(skt, fd);
-  return fd;
+  // socket_set_fd(skt, fd);
+  return OK;
 }
 
 int server_bind_listen(struct server_t* self, char* service){
@@ -158,6 +172,7 @@ int server_bind_listen(struct server_t* self, char* service){
   self->fd = socket(server_info->ai_family, server_info->ai_socktype,
                     server_info->ai_protocol);
   if (self->fd  == ERROR){
+    freeaddrinfo(server_info);
     return ERROR;
   }
 
@@ -188,6 +203,8 @@ int server_bind_listen(struct server_t* self, char* service){
 
 int server_close(struct server_t* self) {
     shutdown(self->fd, 2);
-    close(self->fd);
+    if (self->fd != -1){
+      close(self->fd);
+    }
     return OK;
 }
