@@ -9,9 +9,14 @@
 #define VACIO 0
 #define IGUAL 0
 
-int protocol_create(struct protocol_t* self, char* file){
-  self->file_name = file;
-  return OK;
+int protocol_create(struct protocol_t* self, char* file_name){
+  int status = socket_create(&self->socket);
+  if (status == ERROR){
+    return ERROR;
+  }
+  return file_reader_create(&self->f_reader, file_name);
+  // self->file_name = file;
+  // return OK;
 }
 
 int protocol_send_line(struct socket_t* skt, char* line,
@@ -73,29 +78,28 @@ void protocol_print_line(char* buffer, int buf_size){
 * Abre el archivo que el file_name indica. Si filname == "-"
 * se abre el stdin.
 */
-int protocol_open_file(FILE** file, char* file_name){
-  if (strcmp(file_name, "-") == IGUAL){
-    *file = stdin;
-  } else{
-    *file = fopen(file_name, "r");
-    if (!*file){
-      return ERROR;
-    }
-  }
-  return OK;
-}
+// int protocol_open_file(FILE** file, char* file_name){
+//   if (strcmp(file_name, "-") == IGUAL){
+//     *file = stdin;
+//   } else{
+//     *file = fopen(file_name, "r");
+//     if (!*file){
+//       return ERROR;
+//     }
+//   }
+//   return OK;
+// }
 
 int protocol_run(struct protocol_t* self, const char* host,
                   const char* service){
-  struct socket_t skt;
 
-  if (socket_connect(&skt, host, service) == ERROR){
+  if (socket_connect(&self->socket, host, service) == ERROR){
     return ERROR;
   }
 
-  FILE* file;
-  if (protocol_open_file(&file,self->file_name) == ERROR){
-    socket_close(&skt);
+  // FILE* file;
+  if (file_reader_open_file(&self->f_reader) == ERROR){
+    socket_close(&self->socket);
     return ERROR;
   }
 
@@ -104,12 +108,13 @@ int protocol_run(struct protocol_t* self, const char* host,
   unsigned short bytes_leidos;
   int status = 0;
 
-  bytes_leidos = getline(&line, &len, file);
+  // bytes_leidos = getline(&line, &len, file);
+  bytes_leidos = file_reader_read_line(&self->f_reader, &line, &len);
 
-  while (!feof(file) && status != ERROR){
-    status = protocol_send_line(&skt, line, bytes_leidos);
+  while (!file_reader_invalid_file(&self->f_reader) && status != ERROR){
+    status = protocol_send_line(&self->socket, line, bytes_leidos);
     if (status != ERROR){
-      status = protocol_recv_line(&skt, &line, &bytes_leidos);
+      status = protocol_recv_line(&self->socket, &line, &bytes_leidos);
     }
     if (status != ERROR){
       protocol_map_line(line, bytes_leidos);
@@ -119,14 +124,14 @@ int protocol_run(struct protocol_t* self, const char* host,
       free(line);
       len = VACIO;
     }
-    bytes_leidos = getline(&line, &len, file);
+    bytes_leidos = file_reader_read_line(&self->f_reader, &line, &len);
+    // bytes_leidos = getline(&line, &len, file);
   }
 
 
 
   free(line);
-  fclose(file);
-  socket_close(&skt);
+  // fclose(file);
 
   if (status == ERROR){
     return ERROR;
@@ -135,5 +140,7 @@ int protocol_run(struct protocol_t* self, const char* host,
 }
 
 int protocol_destroy(struct protocol_t* self){
+  file_reader_destroy(&self->f_reader);
+  socket_destroy(&self->socket);
   return OK;
 }

@@ -6,8 +6,8 @@
 
 struct server_t {
     int fd;
-    char* key;
-    struct cipher_t* cipher;
+    struct cipher_t cipher;
+    struct socket_t socket;
 };
 
 /*

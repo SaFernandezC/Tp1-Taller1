@@ -16,7 +16,16 @@ struct cipher_t{
  * -1 (ERROR) ante fallas
  */
 
+
+ /*
+  * Contructor
+  */
 int cipher_create(struct cipher_t* self, char* key);
+
+/*
+ * Destructor
+ */
+int cipher_destroy(struct cipher_t* self);
 
 /*
  * Dada la long de la clave retorna el
@@ -35,7 +44,7 @@ void cipher_cargar_matriz(struct cipher_t* self,
 * Mapea los caracteres de str a numeros (segun el protocolo)
 * y los almacena en resultado.
 */
-int mapear_caracteres(char* str, int string_size, char* resultado);
+int cipher_map_characters(char* str, int string_size, char* resultado);
 
 /**
  * Calcula el tamanio que debe tener el vector de chars de
@@ -45,20 +54,21 @@ int calcular_tamanio(int rango_matriz, int caracteres_validos);
 
 /**
  * De ser necesario, ajusta la longitud del vector result de forma tal
- * que su largo sea multiplo del rango matriz.
+ * que su largo sea multiplo del rango matriz y todos sus caracteres
+ * sean validos.
  */
-int ajustar_longitud(char** result, int rango_matriz, int valid_caract);
+int cipher_adjust_len(char** result, int rango_matriz, int valid_caract);
 
 /**
  * Realiza la multiplicacion de la matriz con cada subvector del mensaje.
  */
-void calculos(int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT], int rango_matriz,
-              char* msg, int largo_msg);
+void cipher_cifrar_msg(int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT],
+                      int rango_matriz, char* msg, int largo_msg);
 
 /*
 * Define si el caracter recibido es valido o no para el cifrado.
 */
-bool es_caracter_valido(char caracter);
+bool cipher_is_valid_char(char caracter);
 
 
 #endif // CIPHER_H

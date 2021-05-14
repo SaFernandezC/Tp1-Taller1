@@ -2,13 +2,15 @@
 #define PROTOCOL_H
 
 #include "common_socket.h"
+#include "client_file_reader.h"
 
 #define OK 0
 #define ERROR -1
 
 struct protocol_t {
-    struct socket_t* socket;
-    char* file_name;
+    struct socket_t socket;
+    struct file_reader_t f_reader;
+    // char* file_name;
 };
 
 /*
@@ -19,7 +21,7 @@ struct protocol_t {
 /*
  * Contructor
  */
-int protocol_create(struct protocol_t* self, char* file);
+int protocol_create(struct protocol_t* self, char* file_name);
 
 /*
  * Destructor

@@ -15,26 +15,24 @@
 #define MAX_RANGO_MAT 4
 #define VACIO 0
 #define WAITING_CLIENTS_MAX 5
+#define NOT_INITIALIZED -1
 
 
 int server_create(struct server_t* self, char* key){
-  struct cipher_t* cipher = calloc(1,sizeof(struct cipher_t));
-  if (!cipher){
+  int status = cipher_create(&self->cipher, key);
+  if(status != OK){
     return ERROR;
   }
-  cipher_create(cipher, key);
-  self->cipher = cipher;
-
-  self->key = key; // ESTO SE VA
-  self->fd = -1;
-  return OK;
+  status = socket_create(&self->socket);
+  self->fd = NOT_INITIALIZED;
+  return status;
 }
 
 int server_destroy(struct server_t* self) {
-    // cipher_destroy();
-    free(self->cipher);
+    cipher_destroy(&self->cipher);
+    socket_destroy(&self->socket);
     server_close(self);
-    self->fd = -1;
+    self->fd = NOT_INITIALIZED;
     return OK;
 }
 
@@ -87,15 +85,13 @@ int server_run(struct server_t* self, char* service){
     return ERROR;
   }
 
-  struct socket_t skt;
-  if (server_accept(self, &skt) == ERROR){
+  if (server_accept(self, &self->socket) == ERROR){
     return ERROR;
   }
 
-
   int matriz[MAX_RANGO_MAT][MAX_RANGO_MAT];
-  int rango_matriz = cipher_calcular_rango_matiz(self->cipher);
-  cipher_cargar_matriz(self->cipher, matriz, rango_matriz);
+  int rango_matriz = cipher_calcular_rango_matiz(&self->cipher);
+  cipher_cargar_matriz(&self->cipher, matriz, rango_matriz);
 
 
   char* buffer = NULL;
@@ -104,20 +100,20 @@ int server_run(struct server_t* self, char* service){
   int status = 0;
 
   while (status != ERROR){
-    status = server_recive_line(&skt, &buffer, &buffer_size);
+    status = server_recive_line(&self->socket, &buffer, &buffer_size);
 
     if (status != ERROR){
       status = reservar_memoria(&mensaje, (int)buffer_size);
     }
     if (status != ERROR){
-      int valid_caract = mapear_caracteres(buffer, buffer_size, mensaje);
+      int valid_caract = cipher_map_characters(buffer, buffer_size, mensaje);
       if (valid_caract == VACIO){
-        status = server_send_line(&skt, &mensaje, VACIO);
+        status = server_send_line(&self->socket, &mensaje, VACIO);
       } else{
-        int nueva_long = ajustar_longitud(&mensaje, rango_matriz, valid_caract);
+        int nueva_long = cipher_adjust_len(&mensaje, rango_matriz, valid_caract);
         if (nueva_long != ERROR){
-          calculos(matriz, rango_matriz, mensaje, nueva_long);
-          status = server_send_line(&skt, &mensaje, nueva_long);
+          cipher_cifrar_msg(matriz, rango_matriz, mensaje, nueva_long);
+          status = server_send_line(&self->socket, &mensaje, nueva_long);
         }
       }
     }
@@ -125,8 +121,6 @@ int server_run(struct server_t* self, char* service){
 
   free(mensaje);
   free(buffer);
-
-  close(skt.sock_fd);
 
   if (status == ERROR){
     return status;
@@ -140,18 +134,12 @@ int server_accept(struct server_t* self, struct socket_t* skt){
   int status = 0;
   socklen_t addr_len = (socklen_t) sizeof(address);
 
-  // int fd = accept(self->fd, (struct sockaddr *)&address, &addr_len);
-  // if (fd == ERROR){
-  //   return fd;
-  // }
   status = socket_accept(skt, self->fd, (struct sockaddr*)&address, &addr_len);
   if (status == ERROR){
     return ERROR;
   }
 
   inet_ntop(AF_INET, &(address.sin_addr), addr_buf, INET_ADDRSTRLEN);
-
-  // socket_set_fd(skt, fd);
   return OK;
 }
 

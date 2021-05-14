@@ -19,6 +19,11 @@ int cipher_create(struct cipher_t* self, char* key){
   return OK;
 }
 
+int cipher_destroy(struct cipher_t* self){
+  self->key = 0;
+  return OK;
+}
+
 int cipher_calcular_rango_matiz(struct cipher_t* self){
   int key_len = strlen(self->key);
   if (key_len == CLAVE_LARGA){
@@ -43,20 +48,20 @@ void cipher_cargar_matriz(struct cipher_t* self,
   }
 }
 
-bool es_caracter_valido(char caracter){
+bool cipher_is_valid_char(char caracter){
   if (caracter < MIN_CHAR || caracter > MAX_CHAR){
     return false;
   }
   return true;
 }
 
-int mapear_caracteres(char* str, int string_size, char* result){
+int cipher_map_characters(char* str, int string_size, char* result){
   int contador = 0;
 
   for (int i = 0; i < string_size; i++) {
     char letra_actual = str[i];
 
-    if (es_caracter_valido(letra_actual)){
+    if (cipher_is_valid_char(letra_actual)){
       result[contador] = (int)letra_actual-65;
       contador++;
     }
@@ -64,15 +69,15 @@ int mapear_caracteres(char* str, int string_size, char* result){
   return contador; //Retona la cantidad de caracteres_validos del string;
 }
 
-int calcular_tamanio(int rango_matriz, int caracteres_validos){
+int calcular_len(int rango_matriz, int caracteres_validos){
   if (caracteres_validos%rango_matriz == 0){
     return caracteres_validos;
   }
   return caracteres_validos + rango_matriz - (caracteres_validos%rango_matriz);
 }
 
-int ajustar_longitud(char** result, int rango_matriz, int valid_caract){
-  int nueva_longitud = calcular_tamanio(rango_matriz, valid_caract);
+int cipher_adjust_len(char** result, int rango_matriz, int valid_caract){
+  int nueva_longitud = calcular_len(rango_matriz, valid_caract);
 
   if (nueva_longitud == valid_caract){
     return nueva_longitud;
@@ -94,7 +99,7 @@ int ajustar_longitud(char** result, int rango_matriz, int valid_caract){
   return nueva_longitud;
 }
 
-void calculos(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
+void cipher_cifrar_msg(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
   int vector_aux[4]; //Maximo posible
   int posicion_vector = 0;
 

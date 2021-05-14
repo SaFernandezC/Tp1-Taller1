@@ -8,12 +8,18 @@
 #include <netdb.h>
 #include <unistd.h> //Close la utiliza
 
+#define NOT_INITIALIZED -1
 
+int socket_create(struct socket_t* self){
+  self->sock_fd = NOT_INITIALIZED;
+  return OK;
+}
 
-// int socket_set_fd(struct socket_t* self, int fd){
-//   self->sock_fd = fd;
-//   return OK;
-// }
+int socket_destroy(struct socket_t* self){
+  socket_close(self);
+  self->sock_fd = NOT_INITIALIZED;
+  return OK;
+}
 
 int socket_connect(struct socket_t* self, const char* host,
                   const char* service){
@@ -56,6 +62,9 @@ int socket_accept(struct socket_t* self, int fd, struct sockaddr* addr,
 
 
 int socket_close(struct socket_t* self){
+  if(self->sock_fd == ERROR){
+    return OK;
+  }
   shutdown(self->sock_fd, SHUT_RDWR); //Cierro comunicacion (RD y WR)
   close(self->sock_fd); // Destruyo el socket
   return OK;
