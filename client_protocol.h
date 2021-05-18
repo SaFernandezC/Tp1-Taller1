@@ -10,7 +10,6 @@
 struct protocol_t {
     struct socket_t socket;
     struct file_reader_t f_reader;
-    // char* file_name;
 };
 
 /*

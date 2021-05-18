@@ -20,7 +20,7 @@
 
 int server_create(struct server_t* self, char* key){
   int status = cipher_create(&self->cipher, key);
-  if(status != OK){
+  if (status != OK){
     return ERROR;
   }
   status = socket_create(&self->socket);
@@ -110,7 +110,7 @@ int server_run(struct server_t* self, char* service){
       if (valid_caract == VACIO){
         status = server_send_line(&self->socket, &mensaje, VACIO);
       } else{
-        int nueva_long = cipher_adjust_len(&mensaje, rango_matriz, valid_caract);
+        int nueva_long =cipher_adjust_len(&mensaje, rango_matriz, valid_caract);
         if (nueva_long != ERROR){
           cipher_cifrar_msg(matriz, rango_matriz, mensaje, nueva_long);
           status = server_send_line(&self->socket, &mensaje, nueva_long);
@@ -122,9 +122,6 @@ int server_run(struct server_t* self, char* service){
   free(mensaje);
   free(buffer);
 
-  if (status == ERROR){
-    return status;
-  }
   return OK;
 }
 

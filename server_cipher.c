@@ -99,7 +99,8 @@ int cipher_adjust_len(char** result, int rango_matriz, int valid_caract){
   return nueva_longitud;
 }
 
-void cipher_cifrar_msg(int matriz[4][4], int rango_matriz, char* msg, int largo_msg){
+void cipher_cifrar_msg(int matriz[4][4], int rango_matriz, char* msg,
+                      int largo_msg){
   int vector_aux[4]; //Maximo posible
   int posicion_vector = 0;
 

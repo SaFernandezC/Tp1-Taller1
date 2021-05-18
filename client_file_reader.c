@@ -13,7 +13,7 @@ int file_reader_create(struct file_reader_t* self, char* file_name){
 }
 
 int file_reader_open_file(struct file_reader_t* self){
-  if(!self || !self->file_name){
+  if (!self || !self->file_name){
     return ERROR;
   }
   if (strcmp(self->file_name, STDIN_CODE) == IGUAL){
@@ -28,18 +28,18 @@ int file_reader_open_file(struct file_reader_t* self){
 }
 
 int file_reader_close_file(struct file_reader_t* self){
-  if(!self || !self->file){
+  if (!self || !self->file){
     return ERROR;
   }
 
-  if(self->file != stdin){
+  if (self->file != stdin){
     fclose(self->file);
   }
   return OK;
 }
 
 int file_reader_read_line(struct file_reader_t* self, char** line, size_t* len){
-  if(!self || !self->file){
+  if (!self || !self->file){
     return ERROR;
   }
   return getline(line, len, self->file);
@@ -50,7 +50,7 @@ int file_reader_invalid_file(struct file_reader_t* self){
 }
 
 int file_reader_destroy(struct file_reader_t* self){
-  if(!self || !self->file){
+  if (!self || !self->file){
     return ERROR;
   }
   file_reader_close_file(self);

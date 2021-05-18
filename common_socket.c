@@ -62,7 +62,7 @@ int socket_accept(struct socket_t* self, int fd, struct sockaddr* addr,
 
 
 int socket_close(struct socket_t* self){
-  if(self->sock_fd == ERROR){
+  if (self->sock_fd == ERROR){
     return OK;
   }
   shutdown(self->sock_fd, SHUT_RDWR); //Cierro comunicacion (RD y WR)

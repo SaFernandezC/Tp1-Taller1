@@ -23,12 +23,25 @@ struct file_reader_t {
  */
 int file_reader_create(struct file_reader_t* self, char* file_name);
 
+/*
+ * Lee una linea del arcihvo almacenandola en el char* line
+ * retorna la cantidad de bytes leidos
+ */
 int file_reader_read_line(struct file_reader_t* self, char** line, size_t* len);
 
+/*
+ * Abre el archivo
+ */
 int file_reader_open_file(struct file_reader_t* self);
 
+/*
+ * Cierra el archivo
+ */
 int file_reader_close_file(struct file_reader_t* self);
 
+/*
+ * Retorna -1 si se llego al final del archivo
+ */
 int file_reader_invalid_file(struct file_reader_t* self);
 
 /*

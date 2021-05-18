@@ -16,12 +16,22 @@ int main(int argc, char** argv) {
   struct server_t server;
   char* service = argv[ARGS_PORT];
   char* key = argv[ARGS_KEY];
+  int status = 0;
 
-  server_create(&server, key);
+  status = server_create(&server, key);
+  if (status != 0) {
+    return status;
+  }
 
-  server_run(&server, service);
+  status = server_run(&server, service);
+  if (status != 0) {
+    return status;
+  }
 
-  server_destroy(&server);
+  status = server_destroy(&server);
+  if (status != 0) {
+    return status;
+  }
 
   return 0;
 }

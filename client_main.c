@@ -16,12 +16,22 @@ int main(int argc, char** argv) {
   const char* host = argv[ARGS_HOST];
   const char* service = argv[ARGS_PORT];
   char* file = argv[ARGS_FILE];
+  int status = 0;
 
-  protocol_create(&protocol, file);
+  status = protocol_create(&protocol, file);
+  if (status != 0){
+    return status;
+  }
 
-  protocol_run(&protocol, host, service);
+  status = protocol_run(&protocol, host, service);
+  if (status != 0){
+    return status;
+  }
 
-  protocol_destroy(&protocol);
+  status = protocol_destroy(&protocol);
+  if (status != 0){
+    return status;
+  }
 
   return 0;
 }
